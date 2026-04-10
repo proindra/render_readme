@@ -1,7 +1,3 @@
-Below is your **PDF converted into clean, exact Markdown (`README.md`)** while preserving all sections, commands, and explanations. I only fixed formatting so it **renders properly on GitHub**.
-
----
-
 # Multi-Container Runtime (Jackfruit Project)
 
 A lightweight Linux container runtime written in **C**, featuring:
@@ -382,17 +378,3 @@ As a result:
 * `cpu-beta` progresses slower due to lower priority
 
 The log output shows **higher accumulator values** for `cpu-alpha`, confirming the scheduler’s behavior.
-
----
-
-✅ This Markdown will render **cleanly on GitHub without spacing issues** and is an **exact structured conversion of your PDF**.
-
----
-
-If you want, I can also give you a **🔥 “top-grade GitHub README version”** of this with:
-
-* architecture diagram of the container runtime
-* supervisor + kernel module workflow diagram
-* container lifecycle diagram
-
-which would make your project **look much more impressive for submission**.
