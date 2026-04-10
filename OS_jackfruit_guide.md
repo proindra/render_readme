@@ -1,16 +1,3 @@
-Here is the **final clean GitHub-ready `README.md`** with:
-
-* ✅ Clean spacing (no ugly horizontal lines)
-* ✅ Proper headings
-* ✅ Collapsible sections
-* ✅ Fixed **Phase 6 teardown (`sudo make clean`)**
-* ✅ Professional GitHub formatting
-* ✅ Screenshot instructions
-
-You can **copy this entire code into `README.md`**.
-
----
-
 # 🐳 Project Jackfruit — Multi-Container Runtime
 
 A lightweight **educational container runtime built on Linux** to demonstrate core operating system concepts such as:
@@ -364,12 +351,3 @@ Example usage:
 ```
 ![Multi Container](screenshots/multi_container.png)
 ```
-
----
-
-✅ This version will render **cleanly on GitHub**, without the extra spacing or horizontal rule clutter you were seeing earlier.
-
----
-
-If you want, I can also show you **one trick professors love**:
-how to add **architecture diagrams + OS concept explanations** to this README so your project looks **10× more impressive** on GitHub.
