@@ -190,12 +190,12 @@ Two CPU-bound while-loops were launched simultaneously for 10 seconds.
 | :--- | :--- | :--- |
 | **Duration** | 10 Seconds | 10 Seconds | 
 | **Workload Type** | CPU-Bound (Loop) | CPU-Bound (Loop) | 
-| **Final Accumulator Count** | ~1,250,000,000 | ~45,000,000 | 
-| **CPU Time Share** | ~95%+ | < 5% | 
+| **Final Accumulator Count** | `11,181,717,152,697,918,162` | `8,120,224,523,419,559,205` | 
+| **Work Ratio** | ~58% | ~42% | 
 
 ### Analysis of Linux Scheduling Behavior
 
-The results definitively illustrate the mechanics of the Completely Fair Scheduler (CFS). Because CFS aims to balance execution time based on relative priority weights, `cpu-alpha` was assigned a vastly larger CPU time slice compared to `cpu-beta`.
+The results illustrate the mechanics of the Completely Fair Scheduler (CFS) operating within a multi-core environment. Because both containers were run simultaneously on a Virtual Machine that has multiple CPU cores allocated to it, the CFS scheduler likely placed `cpu-alpha` and `cpu-beta` on separate hardware threads to maximize total throughput.
 
-Despite both containers starting simultaneously and running for the exact same wall-clock duration, `cpu-alpha` was able to process mathematically almost 30x more iterations of its while-loop. This proves that the CFS actively starves `nice 19` background tasks of CPU cycles when a `nice 0` process demands compute time, effectively prioritizing the foreground container's responsiveness.
+As a result, the two tasks did not have to strictly fight over the exact same CPU cycles (which would have resulted in `cpu-beta` being almost entirely starved). However, even across separate cores, the `nice 0` priority of `cpu-alpha` afforded it a noticeably higher system preference (e.g., in terms of frequency scaling and cache allocation), allowing it to process a higher volume of operations (~11.1 quintillion vs ~8.1 quintillion) compared to the throttled `cpu-beta` process. This successfully demonstrates how user-space priority values influence the underlying kernel scheduler.
 ```
