@@ -1,45 +1,76 @@
-Here is your **PDF content converted into clean, properly formatted Markdown**. I preserved headings, code blocks, lists, and notes so you can paste it directly into **GitHub / Notion / Markdown editors**.
+Here is a **fully rewritten, clean, GitHub-ready `README.md`** with proper spacing, collapsible sections, warning boxes, and good structure. It avoids unnecessary separators so it will **render nicely on GitHub**. 🚀
+
+You can **copy this directly into `README.md`**.
 
 ---
 
-# Project Jackfruit: Building a Multi-Container Runtime
+# 🐳 Project Jackfruit — Multi-Container Runtime
 
-### Step-by-Step Solution & Execution Guide with Screenshot Markers
+A lightweight **educational container runtime built on Linux** that demonstrates core operating-system concepts such as:
 
-## Team Information
+* 🧩 Multi-container supervision
+* 🧠 Kernel memory monitoring
+* ⚠️ Memory limit enforcement (OOM-like behaviour)
+* ⚙️ CPU scheduling experiments
+* 📜 Bounded-buffer logging
 
-* **Member 1:** Prajwalindra K H (SRN: PES2UG24AM117)
-* **Member 2:** Praveen Rajesh Naik (SRN: PES2UG24AM123)
+The runtime uses **Alpine Linux root filesystems** and a **custom user-space engine**.
 
 ---
 
-# ⚠️ IMPORTANT: Troubleshooting & Clean Slate
+# 👥 Team
 
-If you ever encounter errors like:
+| Member              | SRN           |
+| ------------------- | ------------- |
+| Prajwalindra K H    | PES2UG24AM117 |
+| Praveen Rajesh Naik | PES2UG24AM123 |
+
+---
+
+# 📂 Project Structure
 
 ```
-execvp failed to run /bin/sh (errno: No such file or directory)
+project-jackfruit/
+│
+├── engine                 # User-space container runtime
+├── monitor.ko             # Kernel monitoring module
+├── logs/                  # Container logs
+│
+├── rootfs-base            # Base Alpine filesystem
+├── rootfs-alpha           # Container filesystem
+├── rootfs-beta            # Container filesystem
+│
+├── cpu_hog                # CPU stress test program
+├── memory_hog             # Memory stress test program
+│
+└── boilerplate/           # Build environment
 ```
-
-in your logs, it usually means your `wget` download failed, leaving you with empty folders.
-
-Whenever you need to start fresh:
-
-1. Stop the supervisor (`Ctrl+C` in Terminal 1)
-2. Run the following commands in **Terminal 2**
 
 ---
 
-## 1. Clean everything
+# ⚠️ Troubleshooting (Clean Slate)
+
+> If you encounter errors like:
+>
+> ```
+> execvp failed to run /bin/sh (errno: No such file or directory)
+> ```
+>
+> it usually means the **Alpine filesystem download failed**, leaving empty folders.
+
+Stop the supervisor (`Ctrl+C` in Terminal 1) and run the following in **Terminal 2**.
+
+<details>
+<summary>🔧 Reset environment and rebuild filesystem</summary>
+
+### 1️⃣ Clean existing files
 
 ```bash
 sudo rm -rf logs/* rootfs-alpha rootfs-beta rootfs-base
 make clean
 ```
 
----
-
-## 2. Setup fresh Alpine filesystem
+### 2️⃣ Download Alpine Mini RootFS
 
 ```bash
 mkdir rootfs-base
@@ -49,76 +80,63 @@ wget -qO- \
 | tar -xz -C rootfs-base
 ```
 
----
-
-## 3. Verify the download worked
+### 3️⃣ Verify download
 
 ```bash
 ls rootfs-base
 ```
 
-If this prints **nothing**, the download failed.
-
-If it prints something like:
+Expected output example:
 
 ```
 bin dev etc home ...
 ```
 
-then proceed.
+If **nothing prints**, the download failed.
 
----
-
-## 4. Copy to container folders
+### 4️⃣ Copy filesystem to containers
 
 ```bash
 cp -a ./rootfs-base ./rootfs-alpha
 cp -a ./rootfs-base ./rootfs-beta
 ```
 
----
-
-## 5. Start the container again
-
-*(Make sure supervisor is running in Terminal 1)*
+### 5️⃣ Restart container
 
 ```bash
 sudo ./engine start alpha ./rootfs-alpha "ls -l /"
 ```
 
----
-
-## 6. Check logs
+### 6️⃣ Check logs
 
 ```bash
 cat logs/alpha.log
 ```
 
+</details>
+
 ---
 
-# Phase 1: Environment Setup
+# ⚙️ Phase 1 — Environment Setup
 
-## 1. Compile the User-Space Engine
+<details>
+<summary>Open setup steps</summary>
+
+### Compile User-Space Engine
 
 ```bash
 cd boilerplate
 make
 ```
 
----
-
-## 2. Load the Kernel Module
+### Load Kernel Module
 
 ```bash
 sudo insmod monitor.ko
 ls -l /dev/container_monitor
 ```
 
----
-
-## 3. Setup Alpine Linux Root Filesystems
-
-*(Skip if you already did the troubleshooting steps above)*
+### Setup Alpine Root Filesystem
 
 ```bash
 mkdir rootfs-base
@@ -128,51 +146,47 @@ wget -qO- \
 | tar -xz -C rootfs-base
 ```
 
-Verify download:
+Verify:
 
 ```bash
 ls rootfs-base
 ```
 
-Copy filesystem:
+Copy to container directories:
 
 ```bash
 cp -a ./rootfs-base ./rootfs-alpha
 cp -a ./rootfs-base ./rootfs-beta
 ```
 
+</details>
+
 ---
 
-# Phase 2: Supervisor & Multi-Container Demo
+# 🧩 Phase 2 — Multi-Container Supervision
 
-## 1. Start the Supervisor Daemon
+<details>
+<summary>Launch and manage containers</summary>
 
-Open **Terminal 1**
+### Start Supervisor (Terminal 1)
 
 ```bash
 sudo ./engine supervisor ./rootfs-base
 ```
 
----
-
-## 2. Launch Two Containers
-
-In **Terminal 2**:
+### Launch Containers (Terminal 2)
 
 ```bash
 sudo ./engine start alpha ./rootfs-alpha "ls -l /"
 sudo ./engine start beta ./rootfs-beta "ls -l /"
 ```
 
-📸 **Screenshot #1 — Multi-container supervision**
-
-Capture Terminal 2 showing **both containers starting successfully**.
+📸 **Screenshot #1 — Multi-Container Supervision**
+Capture Terminal 2 showing both containers starting successfully.
 
 ---
 
-## 3. Test CLI and IPC (Split View)
-
-Issue command in one terminal and observe supervisor reaction.
+### Test CLI & IPC
 
 ```bash
 sudo ./engine stop alpha
@@ -180,16 +194,14 @@ sudo ./engine stop alpha
 
 📸 **Screenshot #4 — CLI and IPC**
 
-Take a **split view screenshot** showing:
+Split-view screenshot showing:
 
 * Terminal 2 sending the command
-* Terminal 1 printing acknowledgement
+* Terminal 1 supervisor acknowledgement
 
 ---
 
-## 4. Check Metadata Tracking
-
-*(Restart supervisor in Terminal 1 if needed)*
+### Check Metadata Tracking
 
 ```bash
 sudo ./engine ps
@@ -197,73 +209,81 @@ sudo ./engine ps
 
 📸 **Screenshot #2 — Metadata Tracking**
 
-Capture output showing **containers and their states**.
+Capture the container list and their states.
+
+</details>
 
 ---
 
-# Phase 3: Bounded-Buffer Logging
+# 📜 Phase 3 — Bounded-Buffer Logging
 
-## Verify Log Capture
+Verify logs:
 
 ```bash
 cat logs/alpha.log
 ```
 
-📸 **Screenshot #3 — Bounded Buffer Logging**
+📸 **Screenshot #3 — Logging**
 
-Capture terminal showing **Alpine directory listing inside log file**.
+Capture terminal showing **Alpine directory listing inside the log file**.
 
 ---
 
-# Phase 4: Kernel Memory Monitor (OOM Killer)
+# 🧠 Phase 4 — Kernel Memory Monitor (OOM Killer)
 
-## 1. Inject Memory Hog
+<details>
+<summary>Memory limit testing</summary>
+
+### Inject Memory Hog
 
 ```bash
 sudo cp memory_hog ./rootfs-alpha/
 ```
 
-Run it:
+Run memory hog:
 
 ```bash
 sudo ./engine start alpha-hog ./rootfs-alpha "/memory_hog 10 500"
 ```
 
----
+### Observe Kernel Logs
 
-## 2. Observe Memory Enforcement
-
-Wait **5–10 seconds**, then run:
+Wait **5–10 seconds** and run:
 
 ```bash
 sudo dmesg | tail -n 15
 ```
 
 📸 **Screenshot #5 — Soft Limit Warning**
-
-Capture `dmesg` output highlighting **SOFT LIMIT warning line**.
+Capture `dmesg` showing the **SOFT LIMIT warning**.
 
 📸 **Screenshot #6 — Hard Limit Enforcement**
+Capture `dmesg` showing the **HARD LIMIT kill message**.
 
-Capture `dmesg` output highlighting **HARD LIMIT kill line**.
+</details>
 
 ---
 
-# Phase 5: CPU Scheduler Experiment
+# ⚙️ Phase 5 — CPU Scheduler Experiment
 
-## 1. Run Simultaneous Workloads
+<details>
+<summary>CPU scheduling comparison</summary>
+
+### Copy workload generators
 
 ```bash
 sudo cp cpu_hog ./rootfs-alpha/
 sudo cp cpu_hog ./rootfs-beta/
+```
 
+### Run containers with different priorities
+
+```bash
 sudo ./engine start cpu-alpha ./rootfs-alpha "/cpu_hog 10" --nice 0
 sudo ./engine start cpu-beta ./rootfs-beta "/cpu_hog 10" --nice 19
 ```
 
----
-
-## 2. Analyze Scheduling Logs
+### Analyze logs
 
 Wait **15 seconds**, then run:
 
@@ -274,23 +294,21 @@ cat logs/cpu-beta.log
 
 📸 **Screenshot #7 — Scheduling Experiment**
 
-Capture logs **side-by-side** showing the difference in progress.
+Capture logs side-by-side showing differences in execution progress.
+
+</details>
 
 ---
 
-# Phase 6: Clean Teardown
+# 🧹 Phase 6 — Clean Teardown
 
-## Cleanup and Unload
-
-In **Terminal 1**
-
-Stop supervisor with:
+Stop supervisor in **Terminal 1**
 
 ```
 Ctrl + C
 ```
 
-Then in **Terminal 2**
+Then run in **Terminal 2**
 
 ```bash
 sudo killall engine
@@ -302,12 +320,42 @@ make clean
 
 📸 **Screenshot #8 — Clean Teardown**
 
-Capture terminal showing cleanup commands **finishing without errors or kernel crashes**.
+Capture terminal showing cleanup finishing **without errors or crashes**.
 
 ---
 
-✅ If you want, I can also:
+# 📚 Learning Outcomes
 
-* **Convert this into a GitHub-ready README.md** 📘
-* **Improve formatting with tables, warnings, and collapsible sections**
-* **Generate a report version for submission (Markdown → PDF)**.
+This project demonstrates:
+
+* Linux container fundamentals
+* User-space runtime design
+* Kernel module interaction
+* Memory monitoring and enforcement
+* CPU scheduling behaviour
+* Log buffering mechanisms
+
+---
+
+✅ **Tip:** Add your screenshots in a folder like:
+
+```
+/screenshots
+```
+
+and reference them in the README:
+
+```md
+![Multi Container](screenshots/multi_container.png)
+```
+
+---
+
+If you want, I can also help you make this **even more professional like a top GitHub project**, with:
+
+* 📸 **Automatic screenshot sections**
+* 🎨 **GitHub badges**
+* 📊 **architecture diagrams**
+* 🧠 **OS concepts explanation**
+
+which would make your repo look **10× better for professors or recruiters**.
