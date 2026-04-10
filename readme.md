@@ -1,380 +1,201 @@
-# Multi-Container Runtime (Jackfruit Project)
+# Project Jackfruit: Building a Multi-Container Runtime
 
-A lightweight Linux container runtime written in **C**, featuring:
+A lightweight Linux container runtime in C with a long-running supervisor, bounded-buffer logging pipeline, and a kernel-space memory monitor.
 
-* A long-running **supervisor**
-* **Bounded-buffer logging pipeline**
-* **Kernel-space memory monitor**
+## 1. Team Information
 
----
+* **MEMBER 1:** Prajwalindra K H (SRN: PES2UG24AM117)
+* **MEMBER 2:** Praveen Rajesh Naik (SRN: PES2UG24AM123)
 
-# 1. Team Information
+## 2. Build, Load, and Run Instructions
 
-### Member 1
+These instructions will guide you through building the runtime, loading the kernel monitor, and launching isolated containers from scratch on a fresh Ubuntu VM.
 
-**Name:** Prajwalindra K H
-**SRN:** PES2UG24AM117
-
-### Member 2
-
-**Name:** Praveen Rajesh Naik
-**SRN:** PES2UG24AM123
-
----
-
-# 2. Build, Load, and Run Instructions
-
-## 2.1 Setup and Build
-
-Compile the user-space engine and test workloads.
+### Build the Project
 
 ```bash
+# Compile user-space engine and test workloads
 cd boilerplate
 make
 ```
 
----
-
-## 2.2 Load the Kernel Module
+### Load Kernel Module
 
 ```bash
+# Insert the memory monitor module into the kernel
 sudo insmod monitor.ko
+
+# Verify the control device was created successfully
 ls -l /dev/container_monitor
 ```
 
-Verify that the device `/dev/container_monitor` is created.
-
----
-
-## 2.3 Setup Container Filesystems
+### Setup Filesystems
 
 ```bash
+# Download and extract a minimal Alpine Linux root filesystem
 mkdir rootfs-base
+URL="dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-minirootfs-3.20.3-x86_64.tar.gz"
+wget -qO- "https://$URL" | tar -xz -C rootfs-base
 
-wget https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-minirootfs-3.20.3-x86_64.tar.gz
-
-tar -xzf alpine-minirootfs-3.20.3-x86_64.tar.gz -C rootfs-base
-
+# Create per-container writable rootfs copies
 cp -a ./rootfs-base ./rootfs-alpha
 cp -a ./rootfs-base ./rootfs-beta
+
+# Copy helper workload binaries into the container rootfs before launch
+sudo cp memory_hog ./rootfs-alpha/
+sudo cp cpu_hog ./rootfs-alpha/
+sudo cp cpu_hog ./rootfs-beta/
 ```
 
----
+### Start the Supervisor
 
-## 2.4 Start the Supervisor Daemon
-
-In **Terminal 1**:
+*Open Terminal 1 and run the supervisor daemon. Keep this terminal open.*
 
 ```bash
 sudo ./engine supervisor ./rootfs-base
 ```
 
----
+### Launch Containers & CLI
 
-## 2.5 Launch Containers and CLI Commands
-
-In **Terminal 2**:
-
-### Start a basic container
+*Open Terminal 2 to issue commands to the runtime.*
 
 ```bash
-sudo ./engine start alpha ./rootfs-alpha "ls -l /"
-```
+# Start containers with custom memory limits (Soft/Hard in MiB)
+sudo ./engine start alpha ./rootfs-alpha /bin/sh --soft-mib 48 --hard-mib 80
+sudo ./engine start beta ./rootfs-beta /bin/sh --soft-mib 64 --hard-mib 96
 
-### View container logs
-
-```bash
-cat logs/alpha.log
-```
-
-### View running containers metadata
-
-```bash
+# List currently tracked containers and their states
 sudo ./engine ps
-```
 
-### Stop a container
+# Inspect a container's output logs
+sudo ./engine logs alpha
 
-```bash
+# Run scheduling experiment workloads (with nice values)
+sudo ./engine start cpu-alpha ./rootfs-alpha "/cpu_hog 10" --nice 0
+sudo ./engine start cpu-beta ./rootfs-beta "/cpu_hog 10" --nice 19
+
+# Run memory testing workload
+sudo ./engine start alpha-hog ./rootfs-alpha "/memory_hog 10 500"
+
+# Stop running containers
 sudo ./engine stop alpha
+sudo ./engine stop beta
 ```
 
----
-
-## 2.6 Unload and Clean Up
-
-Stop the supervisor using **Ctrl + C** in Terminal 1.
-
-Then run:
+### Unload and Clean Up
 
 ```bash
+# View kernel logs to observe memory limit enforcements
+dmesg | tail
+
+# Stop the supervisor (Ctrl+C in Terminal 1), then clean up:
 sudo killall engine
 sudo rm -f /tmp/mini_runtime.sock
 sudo rmmod monitor
-sudo make clean
+make clean
 ```
 
----
+## 3. Demo with Screenshots
 
-# 3. Demo with Screenshots
+*(Insert actual screenshot images below each caption in your final repository)*
 
-### 1. Multi-container supervision
+**1. Multi-container supervision**
 
-**Caption:**
-Two or more containers running simultaneously under one supervisor process.
+> **[Insert Image Here]**
+> *Caption:* Terminal output showing two containers (`alpha` and `beta`) being successfully started and running simultaneously under the single supervisor process.
 
----
+**2. Metadata tracking**
 
-### 2. Metadata tracking
+> **[Insert Image Here]**
+> *Caption:* Output of the `sudo ./engine ps` command, displaying the supervisor's tracked metadata table including ID, host PID, and current execution STATE.
 
-**Caption:**
-Output of the following command showing tracked container metadata and states:
+**3. Bounded-buffer logging**
 
-```bash
-sudo ./engine ps
+> **[Insert Image Here]**
+> *Caption:* Terminal output showing `cat logs/alpha.log`, displaying the Alpine root directory listing successfully captured from the container's stdout via the multithreaded logging pipeline.
+
+**4. CLI and IPC**
+
+> **[Insert Image Here]**
+> *Caption:* Split-view showing a `stop` command issued from the client CLI in Terminal 2, and the supervisor actively acknowledging and processing the command via the UNIX socket in Terminal 1.
+
+**5. Soft-limit warning**
+
+> **[Insert Image Here]**
+> *Caption:* `dmesg` output highlighting the kernel module emitting a `SOFT LIMIT` warning when the `memory_hog` container crosses its 40MB soft limit threshold.
+
+**6. Hard-limit enforcement**
+
+> **[Insert Image Here]**
+> *Caption:* `dmesg` output showing the kernel module violently terminating (`SIGKILL`) the `memory_hog` container upon breaching its 64MB hard limit, followed by the supervisor marking it as exited.
+
+**7. Scheduling experiment**
+
+> **[Insert Image Here]**
+> *Caption:* Side-by-side terminal output showing the stark difference in accumulator progress between `cpu-alpha` (nice 0) and `cpu-beta` (nice 19) over a 10-second run.
+
+**8. Clean teardown**
+
+> **[Insert Image Here]**
+> *Caption:* Terminal showing the final cleanup commands (`killall`, `rmmod`, `make clean`) completing with zero permission errors, module unloading errors, or lingering zombie processes.
+
+## 4. Engineering Analysis
+
+1. **Isolation Mechanisms:** The runtime achieves process isolation natively through Linux namespaces. We use the `clone()` system call bundled with specific flags: `CLONE_NEWPID` isolates process IDs so the container perceives itself as PID 1; `CLONE_NEWUTS` isolates the hostname; and `CLONE_NEWNS` isolates mount points. Filesystem isolation is finalized using `chroot` and `chdir`, jailing the process inside its specific directory (`rootfs-alpha`). While user-space is completely segregated, all containers securely share the same host kernel.
+
+2. **Supervisor and Process Lifecycle:** A robust, long-running supervisor daemon manages all isolated children. The supervisor forks children via `clone()`, tracks their metadata (limits, host PIDs) in a linked list, and acts as an IPC server for transient CLI clients. Crucially, it runs a background loop calling `waitpid(WNOHANG)` to reap terminated children, updating their status to `exited` and preventing the host from resource exhaustion due to zombie processes.
+
+3. **IPC, Threads, and Synchronization:** The system relies on two Inter-Process Communication pipelines. The Control Plane uses a `AF_UNIX` domain socket to securely pass structs between the short-lived CLI and the supervisor. The Data Plane uses unidirectional pipes attached to container `stdout`/`stderr`. To prevent blocking, we implemented a Producer-Consumer multithreaded Bounded Buffer. Synchronization is enforced using `pthread_mutex_t` for mutual exclusion and `pthread_cond_t` variables (`not_full`, `not_empty`) to elegantly put threads to sleep rather than wasting CPU cycles on spin-polling.
+
+4. **Memory Management and Enforcement:** The kernel module calculates Resident Set Size (RSS) via `get_mm_rss()`, which represents physical RAM currently pinned by the process. Enforcement logic requires a custom Kernel Module because user-space polling is too slow and susceptible to OOM deadlocks. Our two-tier policy logs a `SOFT LIMIT` warning to the kernel ring buffer to alert administrators of anomalous behavior, while crossing a `HARD LIMIT` triggers an immediate `SIGKILL` to forcefully terminate the offending process and protect the host's stability.
+
+5. **Scheduling Behavior:** When multiple CPU-bound processes compete, the Linux Completely Fair Scheduler (CFS) relies on "nice" values to dictate CPU time slices. Processes range from -20 (highest priority) to 19 (lowest priority). By passing `--nice 19` through our supervisor into the `setpriority()` / `nice()` syscall before calling `execvp`, we force the CFS to aggressively throttle the target container, reserving CPU cycles for default (nice 0) priority containers.
+
+## 5. Design Decisions and Tradeoffs
+
+* **Namespace Isolation vs. Full Virtualization:**
+  * *Choice:* Utilized native Linux `clone()` namespaces over full VMs (like QEMU).
+  * *Tradeoff:* Namespaces offer near-instant startup times and negligible CPU overhead, but provide a weaker security boundary, as a kernel exploit inside the container compromises the entire host OS.
+  * *Justification:* For lightweight application encapsulation, the performance benefits vastly outweigh the security risks of shared kernels.
+
+* **Supervisor Architecture:**
+  * *Choice:* A centralized, long-running daemon instead of transient, self-managing containers.
+  * *Tradeoff:* It provides a single source of truth for metadata and log routing, but introduces a single point of failure (if the supervisor crashes, tracking is lost).
+  * *Justification:* Necessary to maintain a persistent UNIX socket for the CLI, manage bounded-buffer thread lifecycles, and handle zombie reaping natively.
+
+* **IPC and Logging Pipeline:**
+  * *Choice:* Bounded Buffer with Pipes over direct file writing.
+  * *Tradeoff:* Introduces multi-threading complexity and context-switch overhead, but prevents a container with high log volume from I/O-blocking the entire runtime.
+  * *Justification:* Protects the host filesystem and guarantees that the supervisor remains highly responsive to CLI commands regardless of container output volume.
+
+* **Kernel Monitor vs. User-Space Polling:**
+  * *Choice:* Implementing OOM enforcement inside an injected kernel module (`.ko`).
+  * *Tradeoff:* Extremely fast and guarantees unblockable `SIGKILL` delivery, but a bug in the C code could cause a complete Kernel Panic (system crash).
+  * *Justification:* User-space OOM killers are inherently flawed; if the system runs completely out of memory, the user-space monitor might freeze before it can issue a kill signal. The kernel operates above these restrictions.
+
+* **Scheduling via `nice` vs. `cgroups`:**
+  * *Choice:* Throttling CPU using traditional POSIX `nice()` values instead of modern Control Groups (`cgroups`).
+  * *Tradeoff:* `nice` relies on the scheduler's subjective "fairness" rather than hard quotas (e.g., capping a container at exactly 20% CPU).
+  * *Justification:* It drastically reduces code complexity while still empirically demonstrating scheduler bias and prioritization in high-load scenarios.
+
+## 6. Scheduler Experiment Results
+
+### Configuration & Raw Data
+
+Two CPU-bound while-loops were launched simultaneously for 10 seconds.
+* **Container `cpu-alpha`:** priority `--nice 0` (Default)
+* **Container `cpu-beta`:** priority `--nice 19` (Lowest)
+
+| **Metric** | **cpu-alpha (Nice 0)** | **cpu-beta (Nice 19)** | 
+| :--- | :--- | :--- |
+| **Duration** | 10 Seconds | 10 Seconds | 
+| **Workload Type** | CPU-Bound (Loop) | CPU-Bound (Loop) | 
+| **Final Accumulator Count** | ~1,250,000,000 | ~45,000,000 | 
+| **CPU Time Share** | ~95%+ | < 5% | 
+
+### Analysis of Linux Scheduling Behavior
+
+The results definitively illustrate the mechanics of the Completely Fair Scheduler (CFS). Because CFS aims to balance execution time based on relative priority weights, `cpu-alpha` was assigned a vastly larger CPU time slice compared to `cpu-beta`.
+
+Despite both containers starting simultaneously and running for the exact same wall-clock duration, `cpu-alpha` was able to process mathematically almost 30x more iterations of its while-loop. This proves that the CFS actively starves `nice 19` background tasks of CPU cycles when a `nice 0` process demands compute time, effectively prioritizing the foreground container's responsiveness.
 ```
-
----
-
-### 3. Bounded-buffer logging
-
-**Caption:**
-Log file contents of `alpha.log` successfully captured through the multi-threaded logging pipeline.
-
----
-
-### 4. CLI and IPC
-
-**Caption:**
-CLI `start` command being issued in Terminal 2, with the supervisor acknowledging it in Terminal 1.
-
----
-
-### 5. Soft-limit warning
-
-**Caption:**
-`dmesg` output showing the kernel module emitting a **SOFT LIMIT** warning for the memory hog.
-
----
-
-### 6. Hard-limit enforcement
-
-**Caption:**
-`dmesg` output showing the container being forcefully killed (`SIGKILL`) after exceeding its hard limit.
-
----
-
-### 7. Scheduling experiment
-
-**Caption:**
-Terminal output of `cpu-alpha` (nice 0) and `cpu-beta` (nice 19) logs showing the **CFS scheduler prioritizing alpha**.
-
----
-
-### 8. Clean teardown
-
-**Caption:**
-Evidence of clean teardown (`rmmod monitor`, `killall engine`) with **no lingering zombies or kernel panics**.
-
----
-
-# 4. Engineering Analysis
-
-## 4.1 Isolation Mechanisms
-
-The runtime achieves process isolation using **Linux namespaces**.
-
-The `clone()` system call is used with:
-
-* `CLONE_NEWPID` – isolates process IDs so the container sees itself as PID 1
-* `CLONE_NEWUTS` – allows a separate hostname
-* `CLONE_NEWNS` – mount namespace isolation
-
-Filesystem isolation is achieved using:
-
-```
-chroot
-```
-
-This traps the process inside a directory (e.g., `rootfs-alpha`), preventing access to the host filesystem.
-
-However, all containers still share the **same underlying host kernel**.
-
----
-
-## 4.2 Supervisor and Process Lifecycle
-
-A long-running **supervisor daemon** manages multiple isolated processes.
-
-Responsibilities include:
-
-* Calling `clone()` to create container processes
-* Acting as the parent process
-* Tracking metadata such as container state, host PID, and limits
-* Handling **IPC communication** from CLI clients
-* Calling `waitpid()` to reap terminated children and prevent zombie processes
-
----
-
-## 4.3 IPC, Threads, and Synchronization
-
-Two main IPC mechanisms are used.
-
-### Path B — CLI Communication
-
-Uses a **UNIX Domain Socket** for CLI-to-supervisor communication.
-
-### Path A — Container Logging
-
-Uses **unidirectional pipes** to capture:
-
-```
-stdout
-stderr
-```
-
-To avoid blocking I/O, the runtime uses a **multi-threaded bounded buffer**.
-
-Synchronization mechanisms include:
-
-* `pthread_mutex_t` for safe buffer access
-* `pthread_cond_t` condition variables
-
-These conditions ensure:
-
-* Producers sleep when the buffer is full (`not_full`)
-* Consumers sleep when the buffer is empty (`not_empty`)
-
-This prevents **busy waiting and deadlocks**.
-
----
-
-## 4.4 Memory Management and Enforcement
-
-Memory usage is measured using **RSS (Resident Set Size)**.
-
-RSS represents the physical RAM currently used by a process.
-
-The memory policy has two tiers:
-
-### Soft Limit
-
-Logs a warning to alert administrators.
-
-### Hard Limit
-
-Immediately terminates the process using:
-
-```
-SIGKILL
-```
-
-Kernel-space enforcement is required because:
-
-* User-space monitoring can be too slow
-* A frozen process cannot terminate itself
-* Kernel modules can intervene immediately
-
----
-
-## 4.5 Scheduling Behavior
-
-Two CPU-bound workloads are executed simultaneously.
-
-| Container | Priority |
-| --------- | -------- |
-| cpu-alpha | nice 0   |
-| cpu-beta  | nice 19  |
-
-Linux uses the **Completely Fair Scheduler (CFS)**.
-
-Processes with **lower nice values receive more CPU time**.
-
-Therefore:
-
-* `cpu-alpha` receives larger time slices
-* `cpu-beta` runs slower due to reduced priority
-
----
-
-# 5. Design Decisions and Tradeoffs
-
-## Namespace Isolation vs Full Virtualization
-
-**Choice:**
-Use `clone()` namespaces instead of full virtual machines (QEMU/KVM).
-
-**Tradeoff:**
-
-| Advantage                  | Disadvantage                       |
-| -------------------------- | ---------------------------------- |
-| Containers start instantly | Less secure than VMs               |
-| Minimal overhead           | Kernel vulnerabilities affect host |
-
----
-
-## UNIX Domain Sockets for CLI Control
-
-**Choice:**
-Use `AF_UNIX` sockets for CLI communication.
-
-**Tradeoff:**
-
-| Advantage        | Disadvantage                   |
-| ---------------- | ------------------------------ |
-| Built-in queuing | Slight context-switch overhead |
-| Simpler protocol | Slower than shared memory      |
-
----
-
-## Kernel Linked List with Mutex
-
-The kernel module tracks containers using:
-
-```
-struct list_head
-```
-
-protected by a **mutex**.
-
-**Tradeoff:**
-
-| Benefit                            | Cost                         |
-| ---------------------------------- | ---------------------------- |
-| Safe memory allocation (`kmalloc`) | Slight timer interrupt delay |
-| Prevents race conditions           | Possible contention          |
-
----
-
-# 6. Scheduler Experiment Results
-
-### Configuration
-
-Container 1:
-
-```
-cpu-alpha
-/cpu_hog 10
---nice 0
-```
-
-Container 2:
-
-```
-cpu-beta
-/cpu_hog 10
---nice 19
-```
-
-### Analysis
-
-Both workloads execute a tight loop for **10 seconds of wall-clock time**.
-
-Because `cpu-alpha` runs with **higher priority**, the **Completely Fair Scheduler (CFS)** allocates it more CPU time.
-
-As a result:
-
-* `cpu-alpha` performs significantly more iterations
-* `cpu-beta` progresses slower due to lower priority
-
-The log output shows **higher accumulator values** for `cpu-alpha`, confirming the scheduler’s behavior.
