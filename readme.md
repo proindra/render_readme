@@ -147,10 +147,6 @@ sudo rmmod monitor
 
 ** IMP NOTE OF CHANGES**
 ```bash
-# View kernel logs to observe memory limit enforcements
-dmesg | tail
-
-# Stop the supervisor (Ctrl+C in Terminal 1), then clean up:
 # we use this for better cleaning purpose :
 sudo killall engine
 sudo rm -f /tmp/mini_runtime.sock
