@@ -107,42 +107,42 @@ sudo rmmod monitor
 
 **1. Multi-container supervision**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S1.png)]**
 > *Caption:* Terminal output showing two containers (`alpha` and `beta`) being successfully started and running simultaneously under the single supervisor process.
 
 **2. Metadata tracking**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S2.png)]**
 > *Caption:* Output of the `sudo ./engine ps` command, displaying the supervisor's tracked metadata table including ID, host PID, and current execution STATE.
 
 **3. Bounded-buffer logging**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S3.png)]**
 > *Caption:* Terminal output showing `cat logs/alpha.log`, displaying the Alpine root directory listing successfully captured from the container's stdout via the multithreaded logging pipeline.
 
 **4. CLI and IPC**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S4.png)]**
 > *Caption:* Split-view showing a `stop` command issued from the client CLI in Terminal 2, and the supervisor actively acknowledging and processing the command via the UNIX socket in Terminal 1.
 
 **5. Soft-limit warning**
 
-> **[Insert Image Here]**
+> **[![alt text](<Screenshots/S5 and S6.png>)]**
 > *Caption:* `dmesg` output highlighting the kernel module emitting a `SOFT LIMIT` warning when the `memory_hog` container crosses its 40MB soft limit threshold.
 
 **6. Hard-limit enforcement**
 
-> **[Insert Image Here]**
+> **[![alt text](<Screenshots/S5 and S6.png>)]**
 > *Caption:* `dmesg` output showing the kernel module violently terminating (`SIGKILL`) the `memory_hog` container upon breaching its 64MB hard limit, followed by the supervisor marking it as exited.
 
 **7. Scheduling experiment**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S7.png)]**
 > *Caption:* Side-by-side terminal output showing the stark difference in accumulator progress between `cpu-alpha` (nice 0) and `cpu-beta` (nice 19) over a 10-second run.
 
 **8. Clean teardown**
 
-> **[Insert Image Here]**
+> **[![alt text](Screenshots/S8.png)]**
 > *Caption:* Terminal showing the final cleanup commands (`killall`, `rmmod`, `make clean`) completing with zero permission errors, module unloading errors, or lingering zombie processes.
 
 ## 4. Engineering Analysis
