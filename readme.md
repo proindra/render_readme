@@ -61,8 +61,10 @@ sudo ./engine supervisor ./rootfs-base
 
 ```bash
 # Start containers with custom memory limits (Soft/Hard in MiB)
-sudo ./engine start alpha ./rootfs-alpha "ls -l /"
-sudo ./engine start beta ./rootfs-beta "ls -l /"
+we used this : sudo ./engine start alpha ./rootfs-alpha "ls -l /"
+instead of   : sudo ./engine start alpha ./rootfs-alpha /bin/sh --soft-mib 48 --hard-mib 80
+we used this : sudo ./engine start beta ./rootfs-beta "ls -l /"
+instead of   : sudo ./engine start beta ./rootfs-beta /bin/sh --soft-mib 64 --hard-mib 96
 
 # List currently tracked containers and their states
 sudo ./engine ps
