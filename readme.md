@@ -146,7 +146,6 @@ sudo rmmod monitor
 **8. Clean teardown**
 
 **NOTE**
-*
 # we use this for better cleaning purpose :
 sudo killall engine
 sudo rm -f /tmp/mini_runtime.sock
@@ -155,7 +154,6 @@ make clean
 
 # instead of only :
 sudo rmmod monitor
-*
 
 > **[![alt text](Screenshots/S8.png)]**
 
