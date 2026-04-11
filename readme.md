@@ -130,7 +130,7 @@ sudo rmmod monitor
 > *Caption 4 :* Split-view showing a `stop` command issued from the client CLI in Terminal 2, and the supervisor actively acknowledging and processing the command via the UNIX socket in Terminal 1.
 
 **5 & 6. Soft-limit warning & Hard-limit enforcement**
- --- Because our C code was smartly designed to use default limits (40MB and 64MB) even when you didn't type the flags, our memory_hog program hit those invisible walls and triggered the exact dmesg kernel logs was asked for.
+ --- Both at once because our C code was smartly designed to use default limits (40MB and 64MB) even when you didn't type the flags, our memory_hog program hit those invisible walls and triggered the exact dmesg kernel logs was asked for.
 
 > **[![alt text](<Screenshots/S5 and S6.png>)]**
 
