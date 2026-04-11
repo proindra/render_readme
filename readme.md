@@ -91,10 +91,13 @@ sudo ./engine stop beta
 dmesg | tail
 
 # Stop the supervisor (Ctrl+C in Terminal 1), then clean up:
+# we use this for better cleaning purpose :
 sudo killall engine
 sudo rm -f /tmp/mini_runtime.sock
 sudo rmmod monitor
 make clean
+# instead of only :
+sudo rmmod monitor
 ```
 
 ## 3. Demo with Screenshots
