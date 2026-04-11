@@ -135,6 +135,8 @@ sudo rmmod monitor
 
 > *Caption 5 :* `dmesg` output highlighting the kernel module emitting a `SOFT LIMIT` warning when the `memory_hog` container crosses its 40MB soft limit threshold .
 
+> **[![alt text](<Screenshots/S5 and S6.png>)]**
+
 > *Caption 6 :* `dmesg` output showing the kernel module violently terminating (`SIGKILL`) the `memory_hog` container upon breaching its 64MB hard limit, followed by the supervisor marking it as exited.
 
 **7. Scheduling experiment**
