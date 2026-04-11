@@ -145,9 +145,7 @@ sudo rmmod monitor
 
 **8. Clean teardown**
 
-**NOTE**
-### Unload and Clean Up
-
+** IMP NOTE OF CHANGES**
 ```bash
 # View kernel logs to observe memory limit enforcements
 dmesg | tail
