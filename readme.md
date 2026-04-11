@@ -129,11 +129,12 @@ sudo rmmod monitor
 
 > *Caption 4 :* Split-view showing a `stop` command issued from the client CLI in Terminal 2, and the supervisor actively acknowledging and processing the command via the UNIX socket in Terminal 1.
 
-**5. Soft-limit warning & 6. Hard-limit enforcement**
+**5 & 6. Soft-limit warning & Hard-limit enforcement**
 
 > **[![alt text](<Screenshots/S5 and S6.png>)]**
 
 > *Caption 5 :* `dmesg` output highlighting the kernel module emitting a `SOFT LIMIT` warning when the `memory_hog` container crosses its 40MB soft limit threshold .
+
 > *Caption 6 :* `dmesg` output showing the kernel module violently terminating (`SIGKILL`) the `memory_hog` container upon breaching its 64MB hard limit, followed by the supervisor marking it as exited.
 
 **7. Scheduling experiment**
@@ -143,6 +144,18 @@ sudo rmmod monitor
 > *Caption 7 :* Side-by-side terminal output showing the stark difference in accumulator progress between `cpu-alpha` (nice 0) and `cpu-beta` (nice 19) over a 10-second run.
 
 **8. Clean teardown**
+
+**NOTE**
+*
+# we use this for better cleaning purpose :
+sudo killall engine
+sudo rm -f /tmp/mini_runtime.sock
+sudo rmmod monitor
+make clean
+
+# instead of only :
+sudo rmmod monitor
+*
 
 > **[![alt text](Screenshots/S8.png)]**
 
