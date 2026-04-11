@@ -145,7 +145,7 @@ sudo rmmod monitor
 
 **8. Clean teardown**
 
-** IMP NOTE OF CHANGES**
+** IMP NOTE OF CHANGES **
 ```bash
 # we use this for better cleaning purpose :
 sudo killall engine
@@ -220,4 +220,3 @@ Two CPU-bound while-loops were launched simultaneously for 10 seconds.
 The results illustrate the mechanics of the Completely Fair Scheduler (CFS) operating within a multi-core environment. Because both containers were run simultaneously on a Virtual Machine that has multiple CPU cores allocated to it, the CFS scheduler likely placed `cpu-alpha` and `cpu-beta` on separate hardware threads to maximize total throughput.
 
 As a result, the two tasks did not have to strictly fight over the exact same CPU cycles (which would have resulted in `cpu-beta` being almost entirely starved). However, even across separate cores, the `nice 0` priority of `cpu-alpha` afforded it a noticeably higher system preference (e.g., in terms of frequency scaling and cache allocation), allowing it to process a higher volume of operations (~11.1 quintillion vs ~8.1 quintillion) compared to the throttled `cpu-beta` process. This successfully demonstrates how user-space priority values influence the underlying kernel scheduler.
-```
